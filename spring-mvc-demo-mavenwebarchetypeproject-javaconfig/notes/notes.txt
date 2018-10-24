@@ -1,0 +1,122 @@
+My steps to create java config spring app:
+
+* Create maven project with webapp archetype
+* Update pom.xml to include dependencies for:
+	Spring MVC
+	Servlet
+	Hibernate, Connection pooling
+	Db drivers
+* No dispatcher servlet config in web.xml
+* AppConfig: root config class
+* PersistenceConfig: persisstence config class
+	Configure Spring + Hibernate
+		DataSource/Connection pool
+		Entity manager
+		Transaction manager
+		Enable config of Transactional annotation
+
+* MyWebAppInitializer: Config class that replaces web.xml 
+* MyWebConfig: Config class that replaces spring xml config
+* view templates in webapp/web-inf/view
+* static resources in webapp/resources
+* Change jre library to 1.8. Change project facet java to 1.8
+
+
+***DB***
+Create Entity class
+	Annotations used: @Entity, @Table, @Id, @Column...
+		
+Create Repository class for entity
+	Annotations used: @Repository, @Transactional
+	Inject SessionFactory
+	
+Create Controller
+	Annotations used: @Controller, @RequestMapping...
+	Inject repository
+	
+Create view (jsp/jstl/spring tags, thymeleaf, etc.)
+	css in webcontent/resources
+	config spring to serve up resources directory
+	reference css in view
+
+***to do***
+create service class for constants?
+add logging using AOP
+resolve issue: in student crud, when editing, retrieved bdate is -1 day.
+
+
+***Notes***
+what is entity manager?
+	entity manger is jpa standard api
+	session factory is hibernate specific api
+
+to change web project context root: 
+	project properties -> web project settings -> context root
+	-or-
+	double click tomcat in servers tab: modules -> path
+	
+spring security
+	add in pom.xml: spring-security-web, spring-security-config
+	create SecurityWebApplicationInitializer.java, SecurityConfig.java
+	add PersistenceConfig, SecurityConfig in WebAppInitializer.java root config classes
+	
+	role-based access restriction:
+		When user has a role of ADMIN , Spring automagically allows that user to access static resources. For other roles, requests for static resources will fail. To fix, add this config: antMatchers("/resources/**").permitAll() 
+		For role-based restrictions to work, omit this security config: .anyRequest().authenticated()  
+		To help with debugging security, you can use this on the config class: @EnableWebSecurity(debug = true) 
+		
+	jdbc authentication:
+		create db tables user & roles
+		create property file for datasource properties
+		create data source bean
+		use data source bean in SecurityConfig
+
+	
+hibernate 5.2 required java 8
+web.xml welcome file overrides view defined in controller with root request mapping
+Use @Transactional in @Service methods, not in @Repository
+
+***Reference***
+http://www.baeldung.com/hibernate-5-spring
+https://sivalabs.in/2014/03/springmvc4-spring-data-jpa-springsecurity-configuration-using-javaconfig/
+https://www.boraji.com/spring-4-hibernate-5-jpa-2-integration-example
+
+create redirect for invalid url/default error page:
+	https://spring.io/blog/2013/11/01/exception-handling-in-spring-mvc
+	https://memorynotfound.com/spring-mvc-exception-handling/
+	
+https://stackoverflow.com/questions/47769266/chrome-doesnt-support-date-format-using-spring-mvc
+
+spring aop
+	http://www.baeldung.com/spring-aop-pointcut-tutorial
+	
+to remove eclispe error:Cannot change version of project facet Dynamic Web Module to 3.0
+	https://stackoverflow.com/questions/18122336/cannot-change-version-of-project-facet-dynamic-web-module-to-3-0/18632054#18632054	
+
+***History***
+04/10/2018:
+	Separate config classes into root, persistence and web
+	Use entity manager instead of session factory
+04/11/2018:	
+	create redirect for invalid url/default error page
+	replace @RequestMapping with @GetMapping/@PostMapping
+04/12/2018:
+	add i18n support
+04/13/2018:
+	student crud
+05/13/2018:
+	Add support for Maven WAR Plugin, web.xml now removed
+05/14/2018:
+	Add security using in memory user and custom bootstrap login page [SecurityConfig.java, LoginController.java]
+	Add main menu logout [SecurityConfig.java]
+05/16/2018:
+	Add role-based accessrestrictions [SecurityConfig.java]
+	Add custom access-denied page [SecurityConfig.java, LoginController.java, access-denied.jsp]
+	Display content based on roles [main-menu.jsp]
+	Use JDBC user authentication instead of in-memory [pom.xml, security-persistence.properties, PersistenceConfig.java, SecurityConfig.java]
+05/18/2018:
+	Add user registration with password encrypted JDBC user authentication 
+		[pom.xml, CRMUser.java, SecurityConfig.java, RegistrationController.java, registration-form.jsp, registration-confirmation.jsp]
+10/24/2018:
+	Updated from Mysql 5 to 8
+	Note: Encountered 'public key' error when connecting to Mysql 8 docker container due to new authentication method. Used local installation instead w/ legacy authentication method		
